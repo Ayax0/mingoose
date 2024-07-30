@@ -32,11 +32,13 @@ import type { Hookable } from "hookable";
 import type { ModelHooks } from "./types/hooks";
 import type { ObjectIdLike } from "./types/mongodb";
 import { parseObjectIdLike } from "./utils/model";
+import defu from "defu";
+import { defaultReplaceOptions, defaultUpdateOptions } from "./_defaults/model";
 
 export function defineModel<DocType extends Document = Document>(
   mingoose: Mingoose,
   schema: ZodSchema<OptionalUnlessRequiredId<DocType>>,
-  name?: string,
+  name?: string
 ): Model<DocType> {
   const _caller = caller();
   const _name = name || (_caller ? basename(_caller).split(".")[0] : undefined);
@@ -47,7 +49,7 @@ export function defineModel<DocType extends Document = Document>(
 }
 
 export class Model<
-  DocType extends Document = BSON.Document,
+  DocType extends Document = BSON.Document
 > extends Collection<DocType> {
   schema: ZodSchema<OptionalUnlessRequiredId<DocType>>;
   hooks: Hookable<ModelHooks<DocType>>;
@@ -55,7 +57,7 @@ export class Model<
   constructor(
     mingoose: Mingoose,
     schema: ZodSchema<OptionalUnlessRequiredId<DocType>>,
-    name: string,
+    name: string
   ) {
     // @ts-expect-error: missing type definition
     // biome-ignore format: ts-expect
@@ -68,7 +70,7 @@ export class Model<
 
   findById(
     id: ObjectIdLike,
-    options?: FindOptions<DocType>,
+    options?: FindOptions<DocType>
   ): Promise<WithId<DocType> | null> {
     return options
       ? this.findOne(parseObjectIdLike(id), options)
@@ -77,20 +79,20 @@ export class Model<
 
   findByIdAndDelete(
     id: ObjectIdLike,
-    options: FindOneAndDeleteOptions & { includeResultMetadata: true },
+    options: FindOneAndDeleteOptions & { includeResultMetadata: true }
   ): Promise<ModifyResult<DocType>>;
   findByIdAndDelete(
     id: ObjectIdLike,
-    options: FindOneAndDeleteOptions & { includeResultMetadata: false },
+    options: FindOneAndDeleteOptions & { includeResultMetadata: false }
   ): Promise<WithId<DocType> | null>;
   findByIdAndDelete(
     id: ObjectIdLike,
-    options: FindOneAndDeleteOptions,
+    options: FindOneAndDeleteOptions
   ): Promise<WithId<DocType> | null>;
   findByIdAndDelete(id: ObjectIdLike): Promise<WithId<DocType> | null>;
   findByIdAndDelete(
     id: ObjectIdLike,
-    options?: FindOneAndDeleteOptions,
+    options?: FindOneAndDeleteOptions
   ): Promise<WithId<DocType> | ModifyResult<DocType> | null> {
     return options
       ? this.findOneAndDelete(parseObjectIdLike<DocType>(id), options)
@@ -100,26 +102,26 @@ export class Model<
   findByIdAndUpdate(
     id: ObjectIdLike,
     update: UpdateFilter<DocType>,
-    options: FindOneAndUpdateOptions & { includeResultMetadata: true },
+    options: FindOneAndUpdateOptions & { includeResultMetadata: true }
   ): Promise<ModifyResult<DocType>>;
   findByIdAndUpdate(
     id: ObjectIdLike,
     update: UpdateFilter<DocType>,
-    options: FindOneAndUpdateOptions & { includeResultMetadata: false },
+    options: FindOneAndUpdateOptions & { includeResultMetadata: false }
   ): Promise<WithId<DocType> | null>;
   findByIdAndUpdate(
     id: ObjectIdLike,
     update: UpdateFilter<DocType>,
-    options: FindOneAndUpdateOptions,
+    options: FindOneAndUpdateOptions
+  ): Promise<WithId<DocType> | null>;
+  findByIdAndUpdate(
+    id: ObjectIdLike,
+    update: UpdateFilter<DocType>
   ): Promise<WithId<DocType> | null>;
   findByIdAndUpdate(
     id: ObjectIdLike,
     update: UpdateFilter<DocType>,
-  ): Promise<WithId<DocType> | null>;
-  findByIdAndUpdate(
-    id: ObjectIdLike,
-    update: UpdateFilter<DocType>,
-    options?: FindOneAndUpdateOptions,
+    options?: FindOneAndUpdateOptions
   ): Promise<WithId<DocType> | ModifyResult<DocType> | null> {
     return options
       ? this.findOneAndUpdate(parseObjectIdLike<DocType>(id), update, options)
@@ -127,7 +129,7 @@ export class Model<
   }
 
   validate(
-    doc: OptionalUnlessRequiredId<DocType>,
+    doc: OptionalUnlessRequiredId<DocType>
   ): OptionalUnlessRequiredId<DocType> {
     try {
       this.hooks.callHook("pre:validate", doc);
@@ -144,7 +146,7 @@ export class Model<
 
   async deleteMany(
     filter?: Filter<DocType>,
-    options?: DeleteOptions,
+    options?: DeleteOptions
   ): Promise<DeleteResult> {
     this.hooks.callHook("pre:deleteMany", filter, options);
     const result = await super.deleteMany(filter, options);
@@ -154,7 +156,7 @@ export class Model<
 
   async deleteOne(
     filter?: Filter<DocType>,
-    options?: DeleteOptions,
+    options?: DeleteOptions
   ): Promise<DeleteResult> {
     this.hooks.callHook("pre:deleteOne", filter, options);
     const result = await super.deleteOne(filter, options);
@@ -164,7 +166,7 @@ export class Model<
 
   find(
     filter?: Filter<DocType>,
-    options?: FindOptions<DocType>,
+    options?: FindOptions<DocType>
   ): FindCursor<WithId<DocType>> {
     this.hooks.callHook("pre:find", filter, options);
     const result = filter ? super.find(filter, options) : super.find();
@@ -176,11 +178,11 @@ export class Model<
   async findOne(filter: Filter<DocType>): Promise<WithId<DocType> | null>;
   async findOne(
     filter: Filter<DocType>,
-    options: FindOptions,
+    options: FindOptions
   ): Promise<WithId<DocType> | null>;
   async findOne(
     filter?: Filter<DocType>,
-    options?: FindOptions,
+    options?: FindOptions
   ): Promise<DocType | WithId<DocType> | null> {
     this.hooks.callHook("pre:findOne", filter, options);
     const result = await (filter
@@ -192,22 +194,22 @@ export class Model<
 
   async findOneAndDelete(
     filter: Filter<DocType>,
-    options: FindOneAndDeleteOptions & { includeResultMetadata: true },
+    options: FindOneAndDeleteOptions & { includeResultMetadata: true }
   ): Promise<ModifyResult<DocType>>;
   async findOneAndDelete(
     filter: Filter<DocType>,
-    options: FindOneAndDeleteOptions & { includeResultMetadata: false },
+    options: FindOneAndDeleteOptions & { includeResultMetadata: false }
   ): Promise<WithId<DocType> | null>;
   async findOneAndDelete(
     filter: Filter<DocType>,
-    options: FindOneAndDeleteOptions,
+    options: FindOneAndDeleteOptions
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndDelete(
+    filter: Filter<DocType>
   ): Promise<WithId<DocType> | null>;
   async findOneAndDelete(
     filter: Filter<DocType>,
-  ): Promise<WithId<DocType> | null>;
-  async findOneAndDelete(
-    filter: Filter<DocType>,
-    options?: FindOneAndDeleteOptions,
+    options?: FindOneAndDeleteOptions
   ): Promise<WithId<DocType> | ModifyResult<DocType> | null> {
     this.hooks.callHook("pre:findOneAndDelete", filter, options);
     const result = await (options
@@ -220,75 +222,77 @@ export class Model<
   async findOneAndReplace(
     filter: Filter<DocType>,
     replacement: WithoutId<DocType>,
-    options: FindOneAndReplaceOptions & { includeResultMetadata: true },
+    options: FindOneAndReplaceOptions & { includeResultMetadata: true }
   ): Promise<ModifyResult<DocType>>;
   async findOneAndReplace(
     filter: Filter<DocType>,
     replacement: WithoutId<DocType>,
-    options: FindOneAndReplaceOptions & { includeResultMetadata: false },
+    options: FindOneAndReplaceOptions & { includeResultMetadata: false }
   ): Promise<WithId<DocType> | null>;
   async findOneAndReplace(
     filter: Filter<DocType>,
     replacement: WithoutId<DocType>,
-    options: FindOneAndReplaceOptions,
+    options: FindOneAndReplaceOptions
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndReplace(
+    filter: Filter<DocType>,
+    replacement: WithoutId<DocType>
   ): Promise<WithId<DocType> | null>;
   async findOneAndReplace(
     filter: Filter<DocType>,
     replacement: WithoutId<DocType>,
-  ): Promise<WithId<DocType> | null>;
-  async findOneAndReplace(
-    filter: Filter<DocType>,
-    replacement: WithoutId<DocType>,
-    options?: FindOneAndReplaceOptions,
+    options?: FindOneAndReplaceOptions
   ): Promise<ModifyResult<DocType> | WithId<DocType> | null> {
     this.hooks.callHook("pre:findOneAndReplace", filter, replacement, options);
-    const result = await (options
-      ? super.findOneAndReplace(filter, replacement, options)
-      : super.findOneAndReplace(filter, replacement));
-    this.hooks.callHook("post:findOneAndReplace", result);
-    return result;
+    const _options = defu(options, defaultReplaceOptions);
+    const _result = await super.findOneAndReplace(
+      filter,
+      replacement,
+      _options
+    );
+    this.hooks.callHook("post:findOneAndReplace", _result);
+    return _result;
   }
 
   async findOneAndUpdate(
     filter: Filter<DocType>,
     update: UpdateFilter<DocType>,
-    options: FindOneAndUpdateOptions & { includeResultMetadata: true },
+    options: FindOneAndUpdateOptions & { includeResultMetadata: true }
   ): Promise<ModifyResult<DocType>>;
   async findOneAndUpdate(
     filter: Filter<DocType>,
     update: UpdateFilter<DocType>,
-    options: FindOneAndUpdateOptions & { includeResultMetadata: false },
+    options: FindOneAndUpdateOptions & { includeResultMetadata: false }
   ): Promise<WithId<DocType> | null>;
   async findOneAndUpdate(
     filter: Filter<DocType>,
     update: UpdateFilter<DocType>,
-    options: FindOneAndUpdateOptions,
+    options: FindOneAndUpdateOptions
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndUpdate(
+    filter: Filter<DocType>,
+    update: UpdateFilter<DocType>
   ): Promise<WithId<DocType> | null>;
   async findOneAndUpdate(
     filter: Filter<DocType>,
     update: UpdateFilter<DocType>,
-  ): Promise<WithId<DocType> | null>;
-  async findOneAndUpdate(
-    filter: Filter<DocType>,
-    update: UpdateFilter<DocType>,
-    options?: FindOneAndUpdateOptions,
+    options?: FindOneAndUpdateOptions
   ): Promise<WithId<DocType> | ModifyResult<DocType> | null> {
     this.hooks.callHook("pre:findOneAndUpdate", filter, update, options);
-    const result = await (options
-      ? super.findOneAndUpdate(filter, update, options)
-      : super.findOneAndUpdate(filter, update));
-    this.hooks.callHook("post:findOneAndUpdate", result);
-    return result;
+    const _options = defu(options, defaultUpdateOptions);
+    const _result = await super.findOneAndUpdate(filter, update, _options);
+    this.hooks.callHook("post:findOneAndUpdate", _result);
+    return _result;
   }
 
   async insertMany(
     docs: OptionalUnlessRequiredId<DocType>[],
-    options?: BulkWriteOptions,
+    options?: BulkWriteOptions
   ): Promise<InsertManyResult<DocType>> {
     this.hooks.callHook("pre:insertMany", docs, options);
     const result = await super.insertMany(
       docs.map((doc) => this.validate(doc)),
-      options,
+      options
     );
     this.hooks.callHook("post:insertMany", result);
     return result;
@@ -296,7 +300,7 @@ export class Model<
 
   async insertOne(
     doc: OptionalUnlessRequiredId<DocType>,
-    options?: InsertOneOptions,
+    options?: InsertOneOptions
   ): Promise<InsertOneResult<DocType>> {
     this.hooks.callHook("pre:insertOne", doc, options);
     const result = await super.insertOne(this.validate(doc), options);
@@ -307,7 +311,7 @@ export class Model<
   async updateMany(
     filter: Filter<DocType>,
     update: UpdateFilter<DocType> | BSON.Document[],
-    options?: UpdateOptions,
+    options?: UpdateOptions
   ): Promise<UpdateResult<DocType>> {
     this.hooks.callHook("pre:updateMany", filter, update, options);
     const result = await super.updateMany(filter, update, options);
@@ -318,7 +322,7 @@ export class Model<
   async updateOne(
     filter: Filter<DocType>,
     update: UpdateFilter<DocType> | BSON.Document[],
-    options?: UpdateOptions,
+    options?: UpdateOptions
   ): Promise<UpdateResult<DocType>> {
     this.hooks.callHook("pre:updateOne", filter, update, options);
     const result = await super.updateOne(filter, update, options);

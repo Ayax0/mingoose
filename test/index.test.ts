@@ -31,7 +31,7 @@ describe("mingoose", () => {
         name: z.string(),
         age: z.number(),
         reference: Types.objectId(),
-      }),
+      })
     );
 
     expect(user.schema).toBeDefined();
@@ -53,10 +53,21 @@ describe("mingoose", () => {
   });
 
   it("update document by id", async ({ expect }) => {
-    await user.findByIdAndUpdate(insert.insertedId, {
+    const doc = await user.findByIdAndUpdate(insert.insertedId, {
       $set: { name: "Test2" },
     });
-    const doc = await user.findById(insert.insertedId);
     expect(doc?.name).toBe("Test2");
+  });
+
+  it("replace document", async ({ expect }) => {
+    const doc = await user.findOneAndReplace(
+      { _id: insert.insertedId },
+      {
+        name: "Test3",
+        age: 24,
+        reference: new ObjectId(),
+      }
+    );
+    expect(doc?.name).toBe("Test3");
   });
 });
