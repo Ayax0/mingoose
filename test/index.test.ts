@@ -70,4 +70,11 @@ describe("mingoose", () => {
     );
     expect(doc?.name).toBe("Test3");
   });
+
+  it("delete document by id", async ({ expect }) => {
+    const res = await user.findByIdAndDelete(insert.insertedId, {
+      includeResultMetadata: true,
+    });
+    expect(res.ok).toBe(1);
+  });
 });
