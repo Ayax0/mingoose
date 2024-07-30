@@ -1,8 +1,8 @@
-export default function (name: string) {
+export function pluralize(name: string) {
   const lower = name.toLowerCase();
   if (!~uncountables.indexOf(lower)) {
-    const match = pluralization.filter((rule) => lower.match(rule[0]));
-    if (match[0]) return lower.replace(match[0][0], match[0][1]);
+    const match = pluralization.find((rule) => lower.match(rule[0]));
+    if (match) return lower.replace(match[0], match[1]);
   }
   return lower;
 }
@@ -18,14 +18,14 @@ const pluralization: [RegExp, string][] = [
   [/(alias|status)$/gi, "$1es"],
   [/(bu)s$/gi, "$1ses"],
   [/(buffal|tomat|potat)o$/gi, "$1oes"],
-  [/([ti])um$/gi, "$1a"],
+  [/([it])um$/gi, "$1a"],
   [/sis$/gi, "ses"],
   [/(?:([^f])fe|([lr])f)$/gi, "$1$2ves"],
   [/(hive)$/gi, "$1s"],
   [/([^aeiouy]|qu)y$/gi, "$1ies"],
   [/(x|ch|ss|sh)$/gi, "$1es"],
   [/(matr|vert|ind)ix|ex$/gi, "$1ices"],
-  [/([m|l])ouse$/gi, "$1ice"],
+  [/([lm|])ouse$/gi, "$1ice"],
   [/(kn|w|l)ife$/gi, "$1ives"],
   [/(quiz)$/gi, "$1zes"],
   [/^goose$/i, "geese"],

@@ -1,37 +1,20 @@
 import { ObjectId } from "mongodb";
-import { monfox, z } from "../src";
+import { db } from "./db";
+import user from "./models/user";
 
 async function run() {
-  try {
-    const db = monfox("mongodb://localhost:27017/test");
+  db.hooks.hook("open", () => console.log("db connected"));
+  db.hooks.hook("error", () => console.error("db error"));
+  await db.connect();
 
-    const schema = db.defineModel(
-      "input",
-      z.object({
-        name: z.string(),
-        age: z.number(),
-        reference: z.objectId(),
-        sub: z.object({
-          test: z.string(),
-        }),
-      })
-    );
+  const insert = await user.insertOne({
+    username: "TestUser",
+    password: "12345678",
+    reference: new ObjectId(),
+  });
 
-    schema.hooks.hook("post:insertOne", (doc) => console.log(doc));
-
-    schema.insertOne({
-      name: "test",
-      age: 18,
-      reference: new ObjectId(),
-      sub: {
-        test: "hallo",
-      },
-    });
-
-    schema.findOne();
-  } catch (error) {
-    console.error("db connection failed.", error);
-  }
+  const doc = await user.findById(insert.insertedId);
+  console.log(doc);
 }
 
 run();

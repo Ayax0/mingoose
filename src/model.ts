@@ -1,119 +1,328 @@
-import {
+import type { ZodSchema } from "zod";
+import { Collection } from "mongodb";
+import type {
+  BSON,
   BulkWriteOptions,
-  Collection,
-  Db,
+  DeleteOptions,
+  DeleteResult,
   Document,
   Filter,
+  FindCursor,
+  FindOneAndDeleteOptions,
+  FindOneAndReplaceOptions,
+  FindOneAndUpdateOptions,
+  FindOptions,
   InsertManyResult,
   InsertOneOptions,
   InsertOneResult,
+  ModifyResult,
   OptionalUnlessRequiredId,
   UpdateFilter,
   UpdateOptions,
   UpdateResult,
+  WithId,
+  WithoutId,
 } from "mongodb";
-import { z } from ".";
-import { createHooks, Hookable } from "hookable";
+import { basename } from "pathe";
+import type { Mingoose } from "./types/mingoose";
+import { caller } from "./utils/caller";
+import { pluralize } from "./utils/pluralize";
+import { createHooks } from "hookable";
+import type { Hookable } from "hookable";
+import type { ModelHooks } from "./types/hooks";
+import type { ObjectIdLike } from "./types/mongodb";
+import { parseObjectIdLike } from "./utils/model";
 
-type HookResult = void | Promise<void>;
+export function defineModel<DocType extends Document = Document>(
+  mingoose: Mingoose,
+  schema: ZodSchema<OptionalUnlessRequiredId<DocType>>,
+  name?: string,
+): Model<DocType> {
+  const _caller = caller();
+  const _name = name || (_caller ? basename(_caller).split(".")[0] : undefined);
 
-export interface ModelHooks<DocType extends Document = Document> {
-  "pre:insertOne": (
-    doc: OptionalUnlessRequiredId<DocType>,
-    options?: InsertOneOptions
-  ) => HookResult;
-  "post:insertOne": (res: InsertOneResult<DocType>) => HookResult;
-  "pre:insertMany": (
-    docs: OptionalUnlessRequiredId<DocType>[],
-    options?: BulkWriteOptions
-  ) => HookResult;
-  "post:insertMany": (res: InsertManyResult<DocType>) => HookResult;
-  "pre:updateOne": (
-    filter: Filter<DocType>,
-    update: Document[] | UpdateFilter<DocType>,
-    options?: UpdateOptions
-  ) => HookResult;
-  "post:updateOne": (res: UpdateResult<DocType>) => HookResult;
-  "pre:updateMany": (
-    filter: Filter<DocType>,
-    update: Document[] | UpdateFilter<DocType>,
-    options?: UpdateOptions
-  ) => HookResult;
-  "post:updateMany": (res: UpdateResult<DocType>) => HookResult;
+  if (!_name) throw new Error("model name could not be determined");
+
+  return new Model<DocType>(mingoose, schema, _name);
 }
 
-export default class Model<
-  DocType extends Document = Document
+export class Model<
+  DocType extends Document = BSON.Document,
 > extends Collection<DocType> {
-  private schema: z.Schema<OptionalUnlessRequiredId<DocType>>;
-  public hooks: Hookable<ModelHooks<DocType>>;
+  schema: ZodSchema<OptionalUnlessRequiredId<DocType>>;
+  hooks: Hookable<ModelHooks<DocType>>;
 
   constructor(
-    db: Db,
+    mingoose: Mingoose,
+    schema: ZodSchema<OptionalUnlessRequiredId<DocType>>,
     name: string,
-    schema: z.Schema<OptionalUnlessRequiredId<DocType>>
   ) {
-    // @ts-ignore: Missing Type Definition
-    super(db, name);
+    // @ts-expect-error: missing type definition
+    // biome-ignore format: ts-expect
+    super(mingoose._client.db(), pluralize(name));
     this.schema = schema;
-    this.hooks = createHooks<ModelHooks<DocType>>();
+    this.hooks = createHooks();
   }
 
-  async insertOne(
+  // Custom
+
+  findById(
+    id: ObjectIdLike,
+    options?: FindOptions<DocType>,
+  ): Promise<WithId<DocType> | null> {
+    return options
+      ? this.findOne(parseObjectIdLike(id), options)
+      : this.findOne(parseObjectIdLike(id));
+  }
+
+  findByIdAndDelete(
+    id: ObjectIdLike,
+    options: FindOneAndDeleteOptions & { includeResultMetadata: true },
+  ): Promise<ModifyResult<DocType>>;
+  findByIdAndDelete(
+    id: ObjectIdLike,
+    options: FindOneAndDeleteOptions & { includeResultMetadata: false },
+  ): Promise<WithId<DocType> | null>;
+  findByIdAndDelete(
+    id: ObjectIdLike,
+    options: FindOneAndDeleteOptions,
+  ): Promise<WithId<DocType> | null>;
+  findByIdAndDelete(id: ObjectIdLike): Promise<WithId<DocType> | null>;
+  findByIdAndDelete(
+    id: ObjectIdLike,
+    options?: FindOneAndDeleteOptions,
+  ): Promise<WithId<DocType> | ModifyResult<DocType> | null> {
+    return options
+      ? this.findOneAndDelete(parseObjectIdLike<DocType>(id), options)
+      : this.findOneAndDelete(parseObjectIdLike<DocType>(id));
+  }
+
+  findByIdAndUpdate(
+    id: ObjectIdLike,
+    update: UpdateFilter<DocType>,
+    options: FindOneAndUpdateOptions & { includeResultMetadata: true },
+  ): Promise<ModifyResult<DocType>>;
+  findByIdAndUpdate(
+    id: ObjectIdLike,
+    update: UpdateFilter<DocType>,
+    options: FindOneAndUpdateOptions & { includeResultMetadata: false },
+  ): Promise<WithId<DocType> | null>;
+  findByIdAndUpdate(
+    id: ObjectIdLike,
+    update: UpdateFilter<DocType>,
+    options: FindOneAndUpdateOptions,
+  ): Promise<WithId<DocType> | null>;
+  findByIdAndUpdate(
+    id: ObjectIdLike,
+    update: UpdateFilter<DocType>,
+  ): Promise<WithId<DocType> | null>;
+  findByIdAndUpdate(
+    id: ObjectIdLike,
+    update: UpdateFilter<DocType>,
+    options?: FindOneAndUpdateOptions,
+  ): Promise<WithId<DocType> | ModifyResult<DocType> | null> {
+    return options
+      ? this.findOneAndUpdate(parseObjectIdLike<DocType>(id), update, options)
+      : this.findOneAndUpdate(parseObjectIdLike<DocType>(id), update);
+  }
+
+  validate(
     doc: OptionalUnlessRequiredId<DocType>,
-    options?: InsertOneOptions
-  ): Promise<InsertOneResult<DocType>> {
-    this.hooks.callHook("pre:insertOne", doc, options);
+  ): OptionalUnlessRequiredId<DocType> {
+    try {
+      this.hooks.callHook("pre:validate", doc);
+      const result = this.schema.parse(doc);
+      this.hooks.callHook("post:validate", result);
+      return result;
+    } catch (error) {
+      this.hooks.callHook("validate:error", error);
+      throw error;
+    }
+  }
 
-    const validated = this.schema.parse(doc);
-    const result = await super.insertOne(validated, options);
+  // Override
 
-    this.hooks.callHook("post:insertOne", result);
+  async deleteMany(
+    filter?: Filter<DocType>,
+    options?: DeleteOptions,
+  ): Promise<DeleteResult> {
+    this.hooks.callHook("pre:deleteMany", filter, options);
+    const result = await super.deleteMany(filter, options);
+    this.hooks.callHook("post:deleteMany", result);
+    return result;
+  }
 
+  async deleteOne(
+    filter?: Filter<DocType>,
+    options?: DeleteOptions,
+  ): Promise<DeleteResult> {
+    this.hooks.callHook("pre:deleteOne", filter, options);
+    const result = await super.deleteOne(filter, options);
+    this.hooks.callHook("post:deleteOne", result);
+    return result;
+  }
+
+  find(
+    filter?: Filter<DocType>,
+    options?: FindOptions<DocType>,
+  ): FindCursor<WithId<DocType>> {
+    this.hooks.callHook("pre:find", filter, options);
+    const result = filter ? super.find(filter, options) : super.find();
+    this.hooks.callHook("post:find", result);
+    return result;
+  }
+
+  async findOne(): Promise<WithId<DocType> | null>;
+  async findOne(filter: Filter<DocType>): Promise<WithId<DocType> | null>;
+  async findOne(
+    filter: Filter<DocType>,
+    options: FindOptions,
+  ): Promise<WithId<DocType> | null>;
+  async findOne(
+    filter?: Filter<DocType>,
+    options?: FindOptions,
+  ): Promise<DocType | WithId<DocType> | null> {
+    this.hooks.callHook("pre:findOne", filter, options);
+    const result = await (filter
+      ? super.findOne(filter, options)
+      : super.findOne());
+    this.hooks.callHook("post:findOne", result);
+    return result;
+  }
+
+  async findOneAndDelete(
+    filter: Filter<DocType>,
+    options: FindOneAndDeleteOptions & { includeResultMetadata: true },
+  ): Promise<ModifyResult<DocType>>;
+  async findOneAndDelete(
+    filter: Filter<DocType>,
+    options: FindOneAndDeleteOptions & { includeResultMetadata: false },
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndDelete(
+    filter: Filter<DocType>,
+    options: FindOneAndDeleteOptions,
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndDelete(
+    filter: Filter<DocType>,
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndDelete(
+    filter: Filter<DocType>,
+    options?: FindOneAndDeleteOptions,
+  ): Promise<WithId<DocType> | ModifyResult<DocType> | null> {
+    this.hooks.callHook("pre:findOneAndDelete", filter, options);
+    const result = await (options
+      ? super.findOneAndDelete(filter, options)
+      : super.findOneAndDelete(filter));
+    this.hooks.callHook("post:findOneAndDelete", result);
+    return result;
+  }
+
+  async findOneAndReplace(
+    filter: Filter<DocType>,
+    replacement: WithoutId<DocType>,
+    options: FindOneAndReplaceOptions & { includeResultMetadata: true },
+  ): Promise<ModifyResult<DocType>>;
+  async findOneAndReplace(
+    filter: Filter<DocType>,
+    replacement: WithoutId<DocType>,
+    options: FindOneAndReplaceOptions & { includeResultMetadata: false },
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndReplace(
+    filter: Filter<DocType>,
+    replacement: WithoutId<DocType>,
+    options: FindOneAndReplaceOptions,
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndReplace(
+    filter: Filter<DocType>,
+    replacement: WithoutId<DocType>,
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndReplace(
+    filter: Filter<DocType>,
+    replacement: WithoutId<DocType>,
+    options?: FindOneAndReplaceOptions,
+  ): Promise<ModifyResult<DocType> | WithId<DocType> | null> {
+    this.hooks.callHook("pre:findOneAndReplace", filter, replacement, options);
+    const result = await (options
+      ? super.findOneAndReplace(filter, replacement, options)
+      : super.findOneAndReplace(filter, replacement));
+    this.hooks.callHook("post:findOneAndReplace", result);
+    return result;
+  }
+
+  async findOneAndUpdate(
+    filter: Filter<DocType>,
+    update: UpdateFilter<DocType>,
+    options: FindOneAndUpdateOptions & { includeResultMetadata: true },
+  ): Promise<ModifyResult<DocType>>;
+  async findOneAndUpdate(
+    filter: Filter<DocType>,
+    update: UpdateFilter<DocType>,
+    options: FindOneAndUpdateOptions & { includeResultMetadata: false },
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndUpdate(
+    filter: Filter<DocType>,
+    update: UpdateFilter<DocType>,
+    options: FindOneAndUpdateOptions,
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndUpdate(
+    filter: Filter<DocType>,
+    update: UpdateFilter<DocType>,
+  ): Promise<WithId<DocType> | null>;
+  async findOneAndUpdate(
+    filter: Filter<DocType>,
+    update: UpdateFilter<DocType>,
+    options?: FindOneAndUpdateOptions,
+  ): Promise<WithId<DocType> | ModifyResult<DocType> | null> {
+    this.hooks.callHook("pre:findOneAndUpdate", filter, update, options);
+    const result = await (options
+      ? super.findOneAndUpdate(filter, update, options)
+      : super.findOneAndUpdate(filter, update));
+    this.hooks.callHook("post:findOneAndUpdate", result);
     return result;
   }
 
   async insertMany(
     docs: OptionalUnlessRequiredId<DocType>[],
-    options?: BulkWriteOptions
+    options?: BulkWriteOptions,
   ): Promise<InsertManyResult<DocType>> {
     this.hooks.callHook("pre:insertMany", docs, options);
-
-    const validated = docs.map((doc) => this.schema.parse(doc));
-    const result = await super.insertMany(validated, options);
-
+    const result = await super.insertMany(
+      docs.map((doc) => this.validate(doc)),
+      options,
+    );
     this.hooks.callHook("post:insertMany", result);
-
     return result;
   }
 
-  async updateOne(
-    filter: Filter<DocType>,
-    update: Document[] | UpdateFilter<DocType>,
-    options?: UpdateOptions
-  ): Promise<UpdateResult<DocType>> {
-    this.hooks.callHook("pre:updateOne", filter, update, options);
-
-    // TODO: validation
-    const result = await super.updateOne(filter, update, options);
-
-    this.hooks.callHook("post:updateOne", result);
-
+  async insertOne(
+    doc: OptionalUnlessRequiredId<DocType>,
+    options?: InsertOneOptions,
+  ): Promise<InsertOneResult<DocType>> {
+    this.hooks.callHook("pre:insertOne", doc, options);
+    const result = await super.insertOne(this.validate(doc), options);
+    this.hooks.callHook("post:insertOne", result);
     return result;
   }
 
   async updateMany(
     filter: Filter<DocType>,
-    update: Document[] | UpdateFilter<DocType>,
-    options?: UpdateOptions
+    update: UpdateFilter<DocType> | BSON.Document[],
+    options?: UpdateOptions,
   ): Promise<UpdateResult<DocType>> {
     this.hooks.callHook("pre:updateMany", filter, update, options);
-
-    // TODO: validation
-    const result = await super.updateOne(filter, update, options);
-
+    const result = await super.updateMany(filter, update, options);
     this.hooks.callHook("post:updateMany", result);
+    return result;
+  }
 
+  async updateOne(
+    filter: Filter<DocType>,
+    update: UpdateFilter<DocType> | BSON.Document[],
+    options?: UpdateOptions,
+  ): Promise<UpdateResult<DocType>> {
+    this.hooks.callHook("pre:updateOne", filter, update, options);
+    const result = await super.updateOne(filter, update, options);
+    this.hooks.callHook("post:updateOne", result);
     return result;
   }
 }

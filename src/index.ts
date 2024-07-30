@@ -1,2 +1,9 @@
-export { monfox } from "./monfox";
-export * from "./zodd";
+export { createMingoose } from "./mingoose";
+export { defineModel } from "./model";
+
+export type { Mingoose } from "./types/mingoose";
+export type { Model } from "./model";
+export type { ObjectIdLike } from "./types/mongodb";
+
+export * from "./schema/types";
+export * as Types from "./schema/types";
