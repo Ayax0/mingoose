@@ -5,6 +5,10 @@
   "repository": "Ayax0/mingoose",
   "homepage": "https://github.com/Ayax0/mingoose#readme",
   "author": "Simon Gander",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": ["mongodb", "mongoose", "schema", "model", "database", "orm"],
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
@@ -18,9 +22,7 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "unbuild",
     "dev": "vitest dev",

@@ -1,9 +1,11 @@
 # Mingoose
 
-<!-- automd:badges color=yellow -->
+<!-- automd:badges color=yellow license name="@nextlvlup/mingoose" bundlephobia -->
 
 [![npm version](https://img.shields.io/npm/v/@nextlvlup/mingoose?color=yellow)](https://npmjs.com/package/@nextlvlup/mingoose)
 [![npm downloads](https://img.shields.io/npm/dm/@nextlvlup/mingoose?color=yellow)](https://npmjs.com/package/@nextlvlup/mingoose)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@nextlvlup/mingoose?color=yellow)](https://bundlephobia.com/package/@nextlvlup/mingoose)
+[![license](https://img.shields.io/github/license/Ayax0/mingoose?color=yellow)](https://github.com/Ayax0/mingoose/blob/main/LICENSE)
 
 <!-- /automd -->
 
@@ -36,24 +38,27 @@ bun install @nextlvlup/mingoose
 
 Import:
 
-<!-- automd:jsimport cjs cdn name="pkg" -->
+<!-- automd:jsimport cjs cdn name="@nextlvlup/mingoose" imports="createMingoose,defineModel" -->
 
 **ESM** (Node.js, Bun)
 
 ```js
-import {} from "pkg";
+import { createMingoose, defineModel } from "@nextlvlup/mingoose";
 ```
 
 **CommonJS** (Legacy Node.js)
 
 ```js
-const {} = require("pkg");
+const { createMingoose, defineModel } = require("@nextlvlup/mingoose");
 ```
 
 **CDN** (Deno, Bun and Browsers)
 
 ```js
-import {} from "https://esm.sh/pkg";
+import {
+  createMingoose,
+  defineModel,
+} from "https://esm.sh/@nextlvlup/mingoose";
 ```
 
 <!-- /automd -->
