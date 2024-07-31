@@ -1,6 +1,6 @@
 import type { Hookable } from "hookable";
-import type { MingooseHooks } from "./hooks";
 import type { MongoClient, MongoClientOptions } from "mongodb";
+import type { MingooseHooks } from "./hooks";
 
 export interface Mingoose {
   url: string;

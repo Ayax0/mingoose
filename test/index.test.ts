@@ -1,10 +1,10 @@
-import { describe, it } from "vitest";
-import { createMingoose, defineModel, Types } from "../src";
-import type { Mingoose, Model, ObjectIdLike } from "../src";
-import waitForHook from "./utils.ts/waitForHook";
-import { z } from "zod";
 import { ObjectId } from "mongodb";
 import type { InsertOneResult } from "mongodb";
+import { describe, it } from "vitest";
+import { z } from "zod";
+import { Types, createMingoose, defineModel } from "../src";
+import type { Mingoose, Model, ObjectIdLike } from "../src";
+import waitForHook from "./utils.ts/waitForHook";
 
 interface User {
   name: string;
@@ -37,7 +37,7 @@ describe("mingoose", () => {
         name: z.string(),
         age: z.number(),
         reference: Types.objectId(),
-      })
+      }),
     );
 
     expect(user.schema).toBeDefined();

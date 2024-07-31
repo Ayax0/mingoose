@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { ObjectId } from "mongodb";
+import { z } from "zod";
 
 export const objectId = () =>
   z
@@ -12,7 +12,7 @@ export const objectId = () =>
           message: "invalide objectId",
         });
         return z.NEVER;
-      })
+      }),
     )
     .or(
       z.number().transform((val, ctx) => {
@@ -22,5 +22,5 @@ export const objectId = () =>
           message: "invalide objectId",
         });
         return z.NEVER;
-      })
+      }),
     );
