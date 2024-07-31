@@ -1,6 +1,6 @@
 import type { ObjectId, WithId } from "mongodb";
-import { Model } from "../model";
-import { z } from "zod";
+import type { z } from "zod";
+import type { Model } from "../model";
 
 export type ObjectIdLike = string | number | ObjectId | Uint8Array;
 

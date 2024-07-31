@@ -2,8 +2,8 @@
 
 <!-- automd:badges color=yellow -->
 
-[![npm version](https://img.shields.io/npm/v/mingoose?color=yellow)](https://npmjs.com/package/@nextlvlup/mingoose)
-[![npm downloads](https://img.shields.io/npm/dm/mingoose?color=yellow)](https://npmjs.com/package/@nextlvlup/mingoose)
+[![npm version](https://img.shields.io/npm/v/@nextlvlup/mingoose?color=yellow)](https://npmjs.com/package/@nextlvlup/mingoose)
+[![npm downloads](https://img.shields.io/npm/dm/@nextlvlup/mingoose?color=yellow)](https://npmjs.com/package/@nextlvlup/mingoose)
 
 <!-- /automd -->
 
