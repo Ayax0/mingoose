@@ -1,11 +1,11 @@
+import { createHooks } from "hookable";
 import { MongoClient } from "mongodb";
 import type { MongoClientOptions } from "mongodb";
-import { createHooks } from "hookable";
 import type { Mingoose } from "./types/mingoose";
 
 export function createMingoose(
   url: string,
-  options?: MongoClientOptions
+  options?: MongoClientOptions,
 ): Mingoose {
   const client = new MongoClient(url, options);
 

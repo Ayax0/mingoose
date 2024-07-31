@@ -1,4 +1,7 @@
-import { FindOneAndReplaceOptions, FindOneAndUpdateOptions } from "mongodb";
+import type {
+  FindOneAndReplaceOptions,
+  FindOneAndUpdateOptions,
+} from "mongodb";
 
 export const defaultReplaceOptions = <FindOneAndReplaceOptions>{
   returnDocument: "after",

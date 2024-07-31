@@ -2,8 +2,8 @@
 
 <!-- automd:badges color=yellow -->
 
-[![npm version](https://img.shields.io/npm/v/packageName?color=yellow)](https://npmjs.com/package/packageName)
-[![npm downloads](https://img.shields.io/npm/dm/packageName?color=yellow)](https://npmjs.com/package/packageName)
+[![npm version](https://img.shields.io/npm/v/mingoose?color=yellow)](https://npmjs.com/package/mingoose)
+[![npm downloads](https://img.shields.io/npm/dm/mingoose?color=yellow)](https://npmjs.com/package/mingoose)
 
 <!-- /automd -->
 
@@ -17,19 +17,19 @@ Install package:
 
 ```sh
 # ✨ Auto-detect
-npx nypm install packageName
+npx nypm install mingoose
 
 # npm
-npm install packageName
+npm install mingoose
 
 # yarn
-yarn add packageName
+yarn add mingoose
 
 # pnpm
-pnpm install packageName
+pnpm install mingoose
 
 # bun
-bun install packageName
+bun install mingoose
 ```
 
 <!-- /automd -->
@@ -83,11 +83,11 @@ import {} from "https://esm.sh/pkg";
 
 <!-- automd:contributors license=MIT -->
 
-Published under the [MIT](https://github.com/unjs/packageName/blob/main/LICENSE) license.
-Made by [community](https://github.com/unjs/packageName/graphs/contributors) 💛
+Published under the [MIT](https://github.com/Ayax0/mingoose/blob/main/LICENSE) license.
+Made by [community](https://github.com/Ayax0/mingoose/graphs/contributors) 💛
 <br><br>
-<a href="https://github.com/unjs/packageName/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=unjs/packageName" />
+<a href="https://github.com/Ayax0/mingoose/graphs/contributors">
+<img src="https://contrib.rocks/image?repo=Ayax0/mingoose" />
 </a>
 
 <!-- /automd -->

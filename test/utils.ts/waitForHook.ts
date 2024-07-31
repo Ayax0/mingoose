@@ -1,4 +1,4 @@
-import type { Hookable, HookKeys } from "hookable";
+import type { HookKeys, Hookable } from "hookable";
 
 // biome-ignore lint: allow any
 export default function waitForHook<T extends Record<string, any>>(
