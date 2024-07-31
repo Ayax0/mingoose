@@ -29,7 +29,7 @@ import { pluralize } from "./utils/pluralize";
 import { createHooks } from "hookable";
 import type { Hookable } from "hookable";
 import type { ModelHooks } from "./types/hooks";
-import type { ObjectIdLike } from "./types/mongodb";
+import type { ObjectIdLike } from "./types";
 import { parseObjectIdLike } from "./utils/model";
 import defu from "defu";
 import { defaultReplaceOptions, defaultUpdateOptions } from "./_defaults/model";
