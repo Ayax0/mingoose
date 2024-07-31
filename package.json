@@ -1,8 +1,10 @@
 {
-  "name": "mingoose",
+  "name": "@nextlvlup/mingoose",
   "version": "0.0.1",
   "description": "",
   "repository": "Ayax0/mingoose",
+  "homepage": "https://github.com/Ayax0/mingoose#readme",
+  "author": "Simon Gander",
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
@@ -16,7 +18,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "unbuild",
     "dev": "vitest dev",

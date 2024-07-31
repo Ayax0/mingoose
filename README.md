@@ -2,8 +2,8 @@
 
 <!-- automd:badges color=yellow -->
 
-[![npm version](https://img.shields.io/npm/v/mingoose?color=yellow)](https://npmjs.com/package/mingoose)
-[![npm downloads](https://img.shields.io/npm/dm/mingoose?color=yellow)](https://npmjs.com/package/mingoose)
+[![npm version](https://img.shields.io/npm/v/mingoose?color=yellow)](https://npmjs.com/package/@nextlvlup/mingoose)
+[![npm downloads](https://img.shields.io/npm/dm/mingoose?color=yellow)](https://npmjs.com/package/@nextlvlup/mingoose)
 
 <!-- /automd -->
 
@@ -17,19 +17,19 @@ Install package:
 
 ```sh
 # ✨ Auto-detect
-npx nypm install mingoose
+npx nypm install @nextlvlup/mingoose
 
 # npm
-npm install mingoose
+npm install @nextlvlup/mingoose
 
 # yarn
-yarn add mingoose
+yarn add @nextlvlup/mingoose
 
 # pnpm
-pnpm install mingoose
+pnpm install @nextlvlup/mingoose
 
 # bun
-bun install mingoose
+bun install @nextlvlup/mingoose
 ```
 
 <!-- /automd -->
