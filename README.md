@@ -58,6 +58,13 @@ import {} from "https://esm.sh/pkg";
 
 <!-- /automd -->
 
+## Features
+
+- Schema validation
+  - ✅ insert
+  - ❌ replace
+  - ❌ update
+
 ## Development
 
 <details>

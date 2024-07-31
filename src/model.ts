@@ -1,4 +1,4 @@
-import type { ZodSchema } from "zod";
+import type { ZodSchema, ZodTypeDef } from "zod";
 import { Collection } from "mongodb";
 import type {
   BSON,
@@ -16,7 +16,6 @@ import type {
   InsertOneOptions,
   InsertOneResult,
   ModifyResult,
-  OptionalUnlessRequiredId,
   UpdateFilter,
   UpdateOptions,
   UpdateResult,
@@ -35,28 +34,32 @@ import { parseObjectIdLike } from "./utils/model";
 import defu from "defu";
 import { defaultReplaceOptions, defaultUpdateOptions } from "./_defaults/model";
 
-export function defineModel<DocType extends Document = Document>(
+export function defineModel<
+  DocType extends Document = Document,
+  InputDocType = DocType
+>(
   mingoose: Mingoose,
-  schema: ZodSchema<OptionalUnlessRequiredId<DocType>>,
+  schema: ZodSchema<DocType, ZodTypeDef, InputDocType>,
   name?: string
-): Model<DocType> {
+): Model<DocType, InputDocType> {
   const _caller = caller();
   const _name = name || (_caller ? basename(_caller).split(".")[0] : undefined);
 
   if (!_name) throw new Error("model name could not be determined");
 
-  return new Model<DocType>(mingoose, schema, _name);
+  return new Model<DocType, InputDocType>(mingoose, schema, _name);
 }
 
 export class Model<
-  DocType extends Document = BSON.Document
+  DocType extends Document = Document,
+  InputDocType = DocType
 > extends Collection<DocType> {
-  schema: ZodSchema<OptionalUnlessRequiredId<DocType>>;
-  hooks: Hookable<ModelHooks<DocType>>;
+  schema: ZodSchema<DocType, ZodTypeDef, InputDocType>;
+  hooks: Hookable<ModelHooks<DocType, InputDocType>>;
 
   constructor(
     mingoose: Mingoose,
-    schema: ZodSchema<OptionalUnlessRequiredId<DocType>>,
+    schema: ZodSchema<DocType, ZodTypeDef, InputDocType>,
     name: string
   ) {
     // @ts-expect-error: missing type definition
@@ -99,6 +102,35 @@ export class Model<
       : this.findOneAndDelete(parseObjectIdLike<DocType>(id));
   }
 
+  async findByIdAndReplace(
+    id: ObjectIdLike,
+    replacement: WithoutId<DocType>,
+    options: FindOneAndReplaceOptions & { includeResultMetadata: true }
+  ): Promise<ModifyResult<DocType>>;
+  async findByIdAndReplace(
+    id: ObjectIdLike,
+    replacement: WithoutId<DocType>,
+    options: FindOneAndReplaceOptions & { includeResultMetadata: false }
+  ): Promise<WithId<DocType> | null>;
+  async findByIdAndReplace(
+    id: ObjectIdLike,
+    replacement: WithoutId<DocType>,
+    options: FindOneAndReplaceOptions
+  ): Promise<WithId<DocType> | null>;
+  async findByIdAndReplace(
+    id: ObjectIdLike,
+    replacement: WithoutId<DocType>
+  ): Promise<WithId<DocType> | null>;
+  async findByIdAndReplace(
+    id: ObjectIdLike,
+    replacement: WithoutId<DocType>,
+    options?: FindOneAndReplaceOptions
+  ): Promise<ModifyResult<DocType> | WithId<DocType> | null> {
+    return options
+      ? this.findOneAndReplace(parseObjectIdLike(id), replacement, options)
+      : this.findOneAndReplace(parseObjectIdLike(id), replacement);
+  }
+
   findByIdAndUpdate(
     id: ObjectIdLike,
     update: UpdateFilter<DocType>,
@@ -128,9 +160,7 @@ export class Model<
       : this.findOneAndUpdate(parseObjectIdLike<DocType>(id), update);
   }
 
-  validate(
-    doc: OptionalUnlessRequiredId<DocType>
-  ): OptionalUnlessRequiredId<DocType> {
+  validate(doc: InputDocType): DocType {
     try {
       this.hooks.callHook("pre:validate", doc);
       const result = this.schema.parse(doc);
@@ -285,12 +315,14 @@ export class Model<
     return _result;
   }
 
+  // @ts-expect-error: intentionaly override of parent function
   async insertMany(
-    docs: OptionalUnlessRequiredId<DocType>[],
+    docs: InputDocType[],
     options?: BulkWriteOptions
   ): Promise<InsertManyResult<DocType>> {
     this.hooks.callHook("pre:insertMany", docs, options);
     const result = await super.insertMany(
+      // @ts-expect-error: invalide type because of override
       docs.map((doc) => this.validate(doc)),
       options
     );
@@ -298,12 +330,17 @@ export class Model<
     return result;
   }
 
+  // @ts-expect-error: intentionaly override of parent function
   async insertOne(
-    doc: OptionalUnlessRequiredId<DocType>,
+    doc: InputDocType,
     options?: InsertOneOptions
   ): Promise<InsertOneResult<DocType>> {
     this.hooks.callHook("pre:insertOne", doc, options);
-    const result = await super.insertOne(this.validate(doc), options);
+    const result = await super.insertOne(
+      // @ts-expect-error: invalide type because of override
+      this.validate(doc),
+      options
+    );
     this.hooks.callHook("post:insertOne", result);
     return result;
   }

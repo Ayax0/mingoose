@@ -9,11 +9,17 @@ import type { InsertOneResult } from "mongodb";
 interface User {
   name: string;
   age: number;
+  reference: ObjectId;
+}
+
+interface UserInput {
+  name: string;
+  age: number;
   reference: ObjectIdLike;
 }
 
 let db: Mingoose;
-let user: Model<User>;
+let user: Model<User, UserInput>;
 let insert: InsertOneResult<User>;
 
 describe("mingoose", () => {
@@ -59,15 +65,13 @@ describe("mingoose", () => {
     expect(doc?.name).toBe("Test2");
   });
 
-  it("replace document", async ({ expect }) => {
-    const doc = await user.findOneAndReplace(
-      { _id: insert.insertedId },
-      {
-        name: "Test3",
-        age: 24,
-        reference: new ObjectId(),
-      }
-    );
+  it("replace document by id", async ({ expect }) => {
+    const doc = await user.findByIdAndReplace(insert.insertedId, {
+      name: "Test3",
+      age: 24,
+      reference: new ObjectId(),
+    });
+
     expect(doc?.name).toBe("Test3");
   });
 

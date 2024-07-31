@@ -1,9 +1,26 @@
 import { z } from "zod";
 import { ObjectId } from "mongodb";
-import type { ObjectIdLike } from "../types/mongodb";
 
-export function objectId() {
-  return z
-    .custom<ObjectIdLike>((id) => ObjectId.isValid(id))
-    .transform<ObjectId>((id) => new ObjectId(id));
-}
+export const objectId = () =>
+  z
+    .instanceof(ObjectId)
+    .or(
+      z.string().transform((val, ctx) => {
+        if (ObjectId.isValid(val)) return new ObjectId(val);
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "invalide objectId",
+        });
+        return z.NEVER;
+      })
+    )
+    .or(
+      z.number().transform((val, ctx) => {
+        if (ObjectId.isValid(val)) return ObjectId.createFromTime(val);
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "invalide objectId",
+        });
+        return z.NEVER;
+      })
+    );
