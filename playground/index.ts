@@ -1,4 +1,4 @@
-import { createMingoose, defineModel, Types } from "../src";
+import { createMingoose, defineModel, objectId, Types } from "../src";
 import { z } from "zod";
 
 async function run() {

@@ -18,6 +18,7 @@ import type {
   InsertOneOptions,
   InsertOneResult,
   ModifyResult,
+  ObjectId,
   UpdateFilter,
   UpdateOptions,
   UpdateResult,
@@ -25,7 +26,7 @@ import type {
   WithoutId,
 } from "mongodb";
 import { basename } from "pathe";
-import type { ZodSchema, ZodTypeDef } from "zod";
+import type { z } from "zod";
 import { defaultReplaceOptions, defaultUpdateOptions } from "./_defaults/model";
 import type { ObjectIdLike } from "./types";
 import type { ModelHooks } from "./types/hooks";
@@ -33,13 +34,20 @@ import type { Mingoose } from "./types/mingoose";
 import { caller } from "./utils/caller";
 import { parseObjectIdLike } from "./utils/model";
 import { pluralize } from "./utils/pluralize";
+import { objectId, type ZodObjectId } from "./schema/types";
 
 export function defineModel<
-  DocType extends Document = Document,
+  DocType extends WithId<Document>,
   InputDocType = DocType,
 >(
   mingoose: Mingoose,
-  schema: ZodSchema<DocType, ZodTypeDef, InputDocType>,
+  schema: z.ZodObject<
+    z.ZodRawShape,
+    "strip",
+    z.ZodTypeAny,
+    DocType,
+    InputDocType
+  >,
   name?: string,
 ): Model<DocType, InputDocType> {
   const _caller = caller();
@@ -51,15 +59,21 @@ export function defineModel<
 }
 
 export class Model<
-  DocType extends Document = Document,
+  DocType extends WithId<Document> = WithId<BSON.Document>,
   InputDocType = DocType,
 > extends Collection<DocType> {
-  schema: ZodSchema<DocType, ZodTypeDef, InputDocType>;
+  schema: z.ZodObject<
+    WithId<z.ZodRawShape>,
+    "strict",
+    z.ZodTypeAny,
+    DocType,
+    InputDocType
+  >;
   hooks: Hookable<ModelHooks<DocType, InputDocType>>;
 
   constructor(
     mingoose: Mingoose,
-    schema: ZodSchema<DocType, ZodTypeDef, InputDocType>,
+    schema: z.ZodSchema<DocType, z.ZodTypeDef, InputDocType>,
     name: string,
   ) {
     // @ts-expect-error: missing type definition
