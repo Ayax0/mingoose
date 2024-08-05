@@ -10,27 +10,11 @@ async function run() {
   const user = defineModel(
     db,
     z.object({
-      _id: objectId(),
       username: z.string(),
       password: z.string(),
       reference: objectId()
     })
   );
-
-  const schema = z.object({
-    _id: objectId().optional(),
-    username: z.string(),
-    password: z.string(),
-    reference: objectId()
-  });
-
-  const schema2 = schema.omit({ _id: true });
-  type test = z.output<typeof schema2>;
-
-  interface Test {
-    _id: string;
-    username: string;
-  }
 
   const insert = await user.insertOne({
     username: "TestUser",

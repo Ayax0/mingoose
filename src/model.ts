@@ -1,9 +1,10 @@
 import defu from "defu";
 import { createHooks } from "hookable";
 import type { Hookable } from "hookable";
-import { Collection } from "mongodb";
+import { Collection, ObjectId } from "mongodb";
 import type {
   BulkWriteOptions,
+  Condition,
   DeleteOptions,
   DeleteResult,
   Filter,
@@ -32,10 +33,9 @@ import type { Mingoose } from "./types/mingoose";
 import { caller } from "./utils/caller";
 import { parseObjectIdLike } from "./utils/model";
 import { pluralize } from "./utils/pluralize";
-import type { ZodObjectId } from "./schema/types";
 
 export function defineModel<
-  ZodRawShape extends z.ZodRawShape & { _id?: ZodObjectId },
+  ZodRawShape extends z.ZodRawShape & { [K in "_id"]?: never },
   UnknownKeys extends z.UnknownKeysParam,
   Catchall extends z.ZodTypeAny,
   Output extends z.objectOutputType<ZodRawShape, Catchall, UnknownKeys>,
@@ -57,7 +57,7 @@ export function defineModel<
 }
 
 export class Model<
-  ZodRawShape extends z.ZodRawShape & { _id?: ZodObjectId },
+  ZodRawShape extends z.ZodRawShape & { [K in "_id"]?: never },
   UnknownKeys extends z.UnknownKeysParam,
   Catchall extends z.ZodTypeAny,
   Output extends z.objectOutputType<ZodRawShape, Catchall, UnknownKeys>,
@@ -85,8 +85,8 @@ export class Model<
     options?: FindOptions<Output>,
   ): Promise<WithId<Output> | null> {
     return options
-      ? this.findOne({ _id: parseObjectIdLike<Output>(id) }, options)
-      : this.findOne({ _id: parseObjectIdLike<Output>(id) });
+      ? this.findOne({ _id: parseObjectIdLike(id) }, options)
+      : this.findOne({ _id: parseObjectIdLike(id) });
   }
 
   findByIdAndDelete(
