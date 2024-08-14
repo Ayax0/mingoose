@@ -29,3 +29,14 @@ export const objectId = () =>
     );
 
 export type ZodObjectId = ReturnType<typeof objectId>;
+export type ZodObjectId2 = z.ZodUnion<
+  [
+    z.ZodUnion<
+      [
+        z.ZodType<ObjectId, z.ZodTypeDef, ObjectId>,
+        z.ZodEffects<z.ZodString, ObjectId, string>,
+      ]
+    >,
+    z.ZodEffects<z.ZodNumber, ObjectId, number>,
+  ]
+>;

@@ -1,55 +1,28 @@
-import { createHooks } from "hookable";
-import type { Hookable } from "hookable";
-import { Collection } from "mongodb";
-import type {
-  BulkWriteOptions,
-  Filter,
-  FindCursor,
-  FindOneAndDeleteOptions,
-  FindOneAndReplaceOptions,
-  FindOneAndUpdateOptions,
-  FindOptions,
-  InsertManyResult,
-  InsertOneOptions,
-  InsertOneResult,
-  ModifyResult,
-  ObjectId,
-  OptionalUnlessRequiredId,
-  UpdateFilter,
-  UpdateOptions,
-  UpdateResult,
-  WithId,
-  WithoutId,
+import { createHooks, type Hookable } from "hookable";
+import {
+  Collection,
+  type FindOneAndDeleteOptions,
+  type ModifyResult,
+  type Filter,
+  type FindCursor,
+  type FindOptions,
+  type WithId,
+  type WithoutId,
+  type FindOneAndReplaceOptions,
+  type ObjectId,
+  type UpdateFilter,
+  type FindOneAndUpdateOptions,
+  type BulkWriteOptions,
+  type InsertManyResult,
+  type OptionalUnlessRequiredId,
+  type InsertOneOptions,
+  type InsertOneResult,
+  type UpdateOptions,
+  type UpdateResult,
 } from "mongodb";
-import { basename } from "pathe";
 import { z } from "zod";
 import type { ModelHooks } from "./types/hooks";
 import type { Mingoose } from "./types/mingoose";
-import { caller } from "./utils/caller";
-import { pluralize } from "./utils/pluralize";
-
-export function defineModel<
-  ZodRawShape extends z.ZodRawShape & { [K in "_id"]: IdType },
-  UnknownKeys extends z.UnknownKeysParam,
-  Catchall extends z.ZodTypeAny,
-  Output extends z.objectOutputType<ZodRawShape, Catchall, UnknownKeys>,
-  Input extends z.objectInputType<ZodRawShape, Catchall, UnknownKeys>,
-  IdType = ObjectId,
->(
-  mingoose: Mingoose,
-  schema: z.ZodObject<ZodRawShape, UnknownKeys, Catchall, Output, Input>,
-  name?: string,
-): Model<ZodRawShape, UnknownKeys, Catchall, Output, Input, IdType> {
-  const _caller = caller();
-  const _name = name || (_caller ? basename(_caller).split(".")[0] : undefined);
-
-  if (!_name) throw new Error("model name could not be determined");
-  return new Model<ZodRawShape, UnknownKeys, Catchall, Output, Input, IdType>(
-    mingoose,
-    schema,
-    _name,
-  );
-}
 
 export class Model<
   ZodRawShape extends z.ZodRawShape & { [K in "_id"]: IdType },

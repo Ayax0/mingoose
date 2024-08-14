@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import type { InsertOneResult } from "mongodb";
 import { describe, it } from "vitest";
 import { z } from "zod";
-import { Types, createMingoose, defineModel } from "../src";
+import { Types, createMingoose, defineModel, objectId } from "../src";
 import type { Mingoose, Model, ObjectIdLike } from "../src";
 import waitForHook from "./utils.ts/waitForHook";
 
@@ -34,6 +34,7 @@ describe("mingoose", () => {
     user = defineModel(
       db,
       z.object({
+        _id: objectId(),
         name: z.string(),
         age: z.number(),
         reference: Types.objectId(),

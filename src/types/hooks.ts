@@ -101,3 +101,8 @@ export interface ModelHooks<
   "post:validate": (result: Output) => void | Promise<void>;
   "validate:error": (error: unknown) => void | Promise<void>;
 }
+
+export interface TestHooks {
+  test: (input: string) => number | Promise<number>;
+  test2: (input: string) => number | Promise<number>;
+}
