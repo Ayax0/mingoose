@@ -67,7 +67,7 @@ import {
 
 - Schema validation
   - ✅ insert
-  - ❌ replace
+  - ✅ replace
   - ❌ update
 
 ## Development

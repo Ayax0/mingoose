@@ -1,4 +1,4 @@
-import { createMingoose, defineModel, Types } from "../src";
+import { createMingoose, defineModel, objectId } from "../src";
 import { z } from "zod";
 
 async function run() {
@@ -10,18 +10,10 @@ async function run() {
   const user = defineModel(
     db,
     z.object({
+      _id: objectId().optional(),
       username: z.string(),
       password: z.string(),
-      age: z.number().optional(),
-      reference: Types.objectId().optional(),
-      subItems: z
-        .array(
-          z.object({
-            id: Types.objectId(),
-            name: z.string(),
-          })
-        )
-        .optional(),
+      reference: objectId()
     })
   );
 

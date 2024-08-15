@@ -2,25 +2,32 @@ import { ObjectId } from "mongodb";
 import type { InsertOneResult } from "mongodb";
 import { describe, it } from "vitest";
 import { z } from "zod";
-import { Types, createMingoose, defineModel } from "../src";
-import type { Mingoose, Model, ObjectIdLike } from "../src";
+import { Types, createMingoose, defineModel, objectId } from "../src";
+import type { Mingoose, Model, ZodObjectId } from "../src";
 import waitForHook from "./utils.ts/waitForHook";
 
-interface User {
-  name: string;
-  age: number;
-  reference: ObjectId;
-}
+const schema = z.object({
+  _id: objectId().optional(),
+  name: z.string(),
+  age: z.number(),
+  reference: Types.objectId(),
+});
 
-interface UserInput {
-  name: string;
-  age: number;
-  reference: ObjectIdLike;
-}
+type UserRawShape = typeof schema.shape;
+type UserOutput = z.objectOutputType<UserRawShape, z.ZodTypeAny>;
+type UserInput = z.objectInputType<UserRawShape, z.ZodTypeAny>;
 
 let db: Mingoose;
-let user: Model<User, UserInput>;
-let insert: InsertOneResult<User>;
+let user: Model<
+  // @ts-expect-error: i dont know what i'm doing here
+  UserRawShape,
+  "strip",
+  z.ZodTypeAny,
+  UserOutput,
+  UserInput,
+  ZodObjectId
+>;
+let insert: InsertOneResult<UserOutput>;
 
 describe("mingoose", () => {
   it("connect to server", async ({ expect }) => {
@@ -31,14 +38,7 @@ describe("mingoose", () => {
   });
 
   it("define schema", ({ expect }) => {
-    user = defineModel(
-      db,
-      z.object({
-        name: z.string(),
-        age: z.number(),
-        reference: Types.objectId(),
-      }),
-    );
+    user = defineModel(db, schema);
 
     expect(user.schema).toBeDefined();
   });
