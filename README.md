@@ -9,7 +9,7 @@
 
 <!-- /automd -->
 
-This is my package description.
+This package is a minimal MongoDB client heavily inspired by mongoose. It was developed with first-party Typescript support in mind and is intended to make it easier to define strongly typed database models using Zod in order to reuse them in other parts of the application. This package is by no means feature complete.
 
 ## Usage
 
