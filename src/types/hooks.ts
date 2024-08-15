@@ -61,7 +61,7 @@ export interface ModelHooks<
   ) => void | Promise<void>;
   "pre:findOneAndReplace": (
     filter: Filter<Output>,
-    replacement: WithoutId<Input>,
+    replacement: WithoutId<Output>,
     options?: FindOneAndReplaceOptions,
   ) => void | Promise<void>;
   "post:findOneAndReplace": (
@@ -69,36 +69,38 @@ export interface ModelHooks<
   ) => void | Promise<void>;
   "pre:findOneAndUpdate": (
     filter: Filter<Output>,
-    update: UpdateFilter<Input>,
+    update: UpdateFilter<Output>,
     options?: FindOneAndUpdateOptions,
   ) => void | Promise<void>;
   "post:findOneAndUpdate": (
     result: WithId<Output> | ModifyResult<Output> | null,
   ) => void | Promise<void>;
   "pre:insertMany": (
-    docs: OptionalUnlessRequiredId<Input>[],
+    docs: OptionalUnlessRequiredId<Output>[],
     options?: BulkWriteOptions,
   ) => void | Promise<void>;
   "post:insertMany": (result: InsertManyResult<Output>) => void | Promise<void>;
   "pre:insertOne": (
-    doc: OptionalUnlessRequiredId<Input>,
+    doc: OptionalUnlessRequiredId<Output>,
     options?: BulkWriteOptions,
   ) => void | Promise<void>;
   "post:insertOne": (result: InsertOneResult<Output>) => void | Promise<void>;
   "pre:updateMany": (
     filter: Filter<Output>,
-    update: UpdateFilter<Input>,
+    update: UpdateFilter<Output>,
     options?: UpdateOptions,
   ) => void | Promise<void>;
   "post:updateMany": (result: UpdateResult<Output>) => void | Promise<void>;
   "pre:updateOne": (
     filter: Filter<Output>,
-    update: UpdateFilter<Input>,
+    update: UpdateFilter<Output>,
     options?: UpdateOptions,
   ) => void | Promise<void>;
   "post:updateOne": (result: UpdateResult<Output>) => void | Promise<void>;
   "pre:validate": (doc: Input) => void | Promise<void>;
   "post:validate": (result: Output) => void | Promise<void>;
+  "pre:validateWithoutId": (doc: WithoutId<Input>) => void | Promise<void>;
+  "post:validateWithoutId": (doc: WithoutId<Output>) => void | Promise<void>;
   "validate:error": (error: unknown) => void | Promise<void>;
 }
 

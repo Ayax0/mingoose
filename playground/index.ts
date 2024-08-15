@@ -10,6 +10,7 @@ async function run() {
   const user = defineModel(
     db,
     z.object({
+      _id: objectId().optional(),
       username: z.string(),
       password: z.string(),
       reference: objectId()
