@@ -1,6 +1,6 @@
 {
   "name": "@nextlvlup/mingoose",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "repository": "Ayax0/mingoose",
   "homepage": "https://github.com/Ayax0/mingoose#readme",
@@ -8,7 +8,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["mongodb", "mongoose", "schema", "model", "database", "orm"],
+  "keywords": [
+    "mongodb",
+    "mongoose",
+    "schema",
+    "model",
+    "database",
+    "orm"
+  ],
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
@@ -22,7 +29,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "unbuild",
     "dev": "vitest dev",
