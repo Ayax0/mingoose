@@ -68,7 +68,7 @@ Open Connection:
 ```ts
 import { createMingoose } from "@nextlvlup/mingoose";
 
-const db = createMingoose("http://myuser:mypassword@localhost:27017/mydatabase");
+const db = createMingoose("mongodb://myuser:mypassword@localhost:27017/mydatabase");
 db.hooks.hook("open", () => console.log("db connected"));
 db.hooks.hook("error", (error) => console.log("db error:", error));
 db.hooks.hook("close", () => console.log("db connection closed"));

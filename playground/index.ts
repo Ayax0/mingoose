@@ -1,9 +1,9 @@
-import { Collection } from "mongodb";
 import { createMingoose, defineModel, objectId } from "../src";
 import { z } from "zod";
+// import type { MatchOptions } from "../src/types/aggregation";
 
 async function run() {
-  const db = createMingoose("http://localhost:27017");
+  const db = createMingoose("mongodb://admin:password@localhost:27017");
   db.hooks.hook("open", () => console.log("db connected"));
   db.hooks.hook("error", () => console.error("db error"));
   db.hooks.hook("close", () => console.log("db connection closed"));
@@ -16,23 +16,34 @@ async function run() {
       username: z.string(),
       password: z.string(),
       reference: objectId()
-    })
+    }),
+    "user"
   );
 
-  const insert = await user.insertOne({
-    username: "TestUser",
-    password: "12345678",
-    reference: "ssfddsf",
-  });
+  // user.insertOne({
+  //   username: "TestUser2",
+  //   password: "test123",
+  //   reference: 0
+  // });
 
-  const doc = await user.findById(insert.insertedId);
-  console.log(doc);
+  // const match: MatchOptions<{ name: string }> = {  };
 
-  const cursor = user.find();
-  cursor.count
+  // user.find({})
 
-  const col = new Collection<{ name: string }>();
-  col.estimatedDocumentCount()
+  
+  const out = await user.collection.aggregate().match({
+    username: "TestUser2"
+  })
+  .lookup({
+    from: user.collection.collectionName,
+    localField: "reference",
+    foreignField: "_id",
+    as: "reference"
+  })
+  .unwind("$reference")
+  .next();
+
+  console.log(out);
 }
 
 run();
