@@ -63,12 +63,66 @@ import {
 
 <!-- /automd -->
 
+Open Connection:
+
+```ts
+import { createMingoose } from "@nextlvlup/mingoose";
+
+const db = createMingoose("http://myuser:mypassword@localhost:27017/mydatabase");
+db.hooks.hook("open", () => console.log("db connected"));
+db.hooks.hook("error", (error) => console.log("db error:", error));
+db.hooks.hook("close", () => console.log("db connection closed"));
+await db.connect();
+```
+
+Define Model:
+
+```ts
+import { objectId, defineModel } from "@nextlvlup/mingoose";
+import { z } from "zod";
+
+const schema = z.object({
+  // the _id field must be defined and it must be optional.
+  _id: objectId().optional(),
+  username: z.string(),
+  password: z.string(),
+  permissionLevel: z.number().default(0)
+});
+
+const userDb = defineModel(db, schema);
+
+userDb.find();
+userDb.findById();
+userDb.findByIdAndDelete();
+userDb.findByIdAndUpdate();
+userDb.findOne();
+userDb.findOneAndDelete();
+userDb.findOneAndReplace();
+userDb.findOneAndUpdate();
+userDb.insertMany();
+userDb.insertOne();
+userDb.updateMany();
+userDb.updateOne();
+
+userDb.hooks.hook("pre:find", (filter, options) => {});
+userDb.hooks.hook("post:find", (result) => {});
+```
+
 ## Features
 
 - Schema validation
   - ✅ insert
   - ✅ replace
   - ❌ update
+- Hooks
+  - ✅ pre
+  - ✅ post
+- Middleware
+  - ❌ pre
+  - ❌ post
+
+### Hooks
+The hooks are not intended as middleware. They can be used to execute additional actions, but the hooks cannot be used to influence the action itself.
 
 ## Development
 

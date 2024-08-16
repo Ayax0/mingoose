@@ -5,6 +5,7 @@ async function run() {
   const db = createMingoose("http://localhost:27017");
   db.hooks.hook("open", () => console.log("db connected"));
   db.hooks.hook("error", () => console.error("db error"));
+  db.hooks.hook("close", () => console.log("db connection closed"));
   await db.connect();
 
   const user = defineModel(
