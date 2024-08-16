@@ -4,6 +4,7 @@ import type { Hookable } from "hookable";
 import { Collection } from "mongodb";
 import type {
   BulkWriteOptions,
+  EstimatedDocumentCountOptions,
   Filter,
   FindCursor,
   FindOneAndDeleteOptions,
@@ -60,7 +61,7 @@ export class Model<
   Input extends z.objectInputType<ZodRawShape, Catchall, UnknownKeys>,
   IdType extends z.ZodOptional<z.ZodTypeAny>,
 > {
-  private collection: Collection<Output>;
+  collection: Collection<Output>;
 
   schema: z.ZodObject<ZodRawShape, UnknownKeys, Catchall, Output, Input>;
   hooks: Hookable<ModelHooks<Output, Input>>;
@@ -77,14 +78,14 @@ export class Model<
     this.hooks = createHooks();
   }
 
-  validate(doc: Input): Output {
+  private validate(doc: Input): Output {
     this.hooks.callHook("pre:validate", doc);
     const validated = this.schema.parse(doc);
     this.hooks.callHook("post:validate", validated);
     return validated;
   }
 
-  validateWithoutId(doc: WithoutId<Input>): WithoutId<Output> {
+  private validateWithoutId(doc: WithoutId<Input>): WithoutId<Output> {
     this.hooks.callHook("pre:validateWithoutId", doc);
     const validated = this.schema
       .extend({ _id: z.never() })
@@ -314,7 +315,7 @@ export class Model<
     options?: BulkWriteOptions,
   ): Promise<InsertManyResult<Output>> {
     const _docs = docs.map((doc) =>
-      this.schema.parse(doc),
+      this.validate(doc),
     ) as OptionalUnlessRequiredId<Output>[];
     this.hooks.callHook("pre:insertMany", _docs, options);
     const _result = await this.collection.insertMany(_docs, options);
@@ -326,7 +327,7 @@ export class Model<
     doc: Input,
     options?: InsertOneOptions,
   ): Promise<InsertOneResult<Output>> {
-    const _doc = this.schema.parse(doc) as OptionalUnlessRequiredId<Output>;
+    const _doc = this.validate(doc) as OptionalUnlessRequiredId<Output>;
     this.hooks.callHook("pre:insertOne", _doc, options);
     const _result = await this.collection.insertOne(_doc, options);
     this.hooks.callHook("post:insertOne", _result);
@@ -352,6 +353,13 @@ export class Model<
     this.hooks.callHook("pre:updateOne", filter, update, options);
     const _result = await this.collection.updateOne(filter, update, options);
     this.hooks.callHook("post:updateOne", _result);
+    return _result;
+  }
+
+  async count(options?: EstimatedDocumentCountOptions) {
+    this.hooks.callHook("pre:count", options);
+    const _result = await this.collection.estimatedDocumentCount(options);
+    this.hooks.callHook("post:count", _result);
     return _result;
   }
 }

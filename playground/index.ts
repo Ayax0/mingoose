@@ -1,3 +1,4 @@
+import { Collection } from "mongodb";
 import { createMingoose, defineModel, objectId } from "../src";
 import { z } from "zod";
 
@@ -26,6 +27,12 @@ async function run() {
 
   const doc = await user.findById(insert.insertedId);
   console.log(doc);
+
+  const cursor = user.find();
+  cursor.count
+
+  const col = new Collection<{ name: string }>();
+  col.estimatedDocumentCount()
 }
 
 run();

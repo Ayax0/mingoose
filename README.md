@@ -103,6 +103,7 @@ userDb.insertMany();
 userDb.insertOne();
 userDb.updateMany();
 userDb.updateOne();
+userDb.count();
 
 userDb.hooks.hook("pre:find", (filter, options) => {});
 userDb.hooks.hook("post:find", (result) => {});

@@ -3,6 +3,7 @@ import type {
   DeleteOptions,
   DeleteResult,
   Document,
+  EstimatedDocumentCountOptions,
   Filter,
   FindCursor,
   FindOneAndDeleteOptions,
@@ -102,6 +103,10 @@ export interface ModelHooks<
   "pre:validateWithoutId": (doc: WithoutId<Input>) => void | Promise<void>;
   "post:validateWithoutId": (doc: WithoutId<Output>) => void | Promise<void>;
   "validate:error": (error: unknown) => void | Promise<void>;
+  "pre:count": (
+    options?: EstimatedDocumentCountOptions,
+  ) => void | Promise<void>;
+  "post:count": (count: number) => void | Promise<void>;
 }
 
 export interface TestHooks {
