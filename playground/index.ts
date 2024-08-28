@@ -1,6 +1,6 @@
 import { createMingoose, defineModel, objectId } from "../src";
 import { z } from "zod";
-// import type { MatchOptions } from "../src/types/aggregation";
+import { QueryBuilder } from "../src/aggregation/queryBuilder";
 
 async function run() {
   const db = createMingoose("mongodb://admin:password@localhost:27017");
@@ -9,27 +9,21 @@ async function run() {
   db.hooks.hook("close", () => console.log("db connection closed"));
   await db.connect();
 
+  const schema = z.object({
+    _id: objectId().optional(),
+    username: z.string(),
+    password: z.string(),
+    reference: objectId()
+  });
+
   const user = defineModel(
     db,
-    z.object({
-      _id: objectId().optional(),
-      username: z.string(),
-      password: z.string(),
-      reference: objectId()
-    }),
+    schema,
     "user"
   );
 
-  // user.insertOne({
-  //   username: "TestUser2",
-  //   password: "test123",
-  //   reference: 0
-  // });
-
-  // const match: MatchOptions<{ name: string }> = {  };
-
-  // user.find({})
-
+  const test = new QueryBuilder<z.infer<typeof schema>>().match().exec();
+  type test2 = typeof test;
   
   const out = await user.collection.aggregate().match({
     username: "TestUser2"
